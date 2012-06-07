@@ -352,7 +352,7 @@ typedef CGPoint KIFDisplacement;
 
 + (id)stepToEnterText:(NSString *)text intoViewWithAccessibilityLabel:(NSString *)label;
 {
-    return [self stepToEnterText:text intoViewWithAccessibilityLabel:label traits:UIAccessibilityTraitNone expectedResult:nil];
+    return [self stepToEnterText:text intoViewWithAccessibilityLabel:label traits:UIAccessibilityTraitNone expectedResult:text];
 }
 
 + (id)stepToEnterText:(NSString *)text intoViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits expectedResult:(NSString *)expectedResult;
@@ -395,11 +395,10 @@ typedef CGPoint KIFDisplacement;
         }
         
         // This is probably a UITextField- or UITextView-ish view, so make sure it worked
-        if ([view respondsToSelector:@selector(text)]) {
+        if (expectedResult && [view respondsToSelector:@selector(text)]) {
             // We trim \n and \r because they trigger the return key, so they won't show up in the final product on single-line inputs
-            NSString *expected = [expectedResult ? expectedResult : text stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
             NSString *actual = [[view performSelector:@selector(text)] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-            KIFTestCondition([actual isEqualToString:expected], error, @"Failed to actually enter text \"%@\" in field; instead, it was \"%@\"", text, actual);
+            KIFTestCondition([actual isEqualToString:expectedResult], error, @"Failed to actually enter text \"%@\" in field; instead, it was \"%@\"", text, actual);
         }
         
         return KIFTestStepResultSuccess;
