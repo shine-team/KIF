@@ -98,6 +98,11 @@ extern id objc_msgSend(id theReceiver, SEL theSelector, ...);
     [autoreleasePool drain];
 }
 
+- (void)cleanUpAfterScenario:(KIFTestScenario *)scenario
+{
+    //Override
+}
+
 static KIFTestController *sharedInstance = nil;
 
 static void releaseInstance()
@@ -398,6 +403,7 @@ static void releaseInstance()
         NSAssert(currentScenarioIndex != NSNotFound, @"Current scenario %@ not found in test scenarios %@, but should be!", self.currentScenario, self.scenarios);
         
         [self _logDidFinishScenario:self.currentScenario duration:-[self.currentScenarioStartDate timeIntervalSinceNow]];
+        [self cleanUpAfterScenario:self.currentScenario];
         if (result == KIFTestStepResultSuccess) {
             [failedScenarioIndexes removeIndex:currentScenarioIndex];
         }

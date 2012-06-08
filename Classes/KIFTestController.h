@@ -130,4 +130,11 @@ typedef void (^KIFTestControllerCompletionBlock)();
  */
 - (void)startTestingWithCompletionBlock:(KIFTestControllerCompletionBlock)completionBlock;
 
+
+/*!
+ @method cleanUpAfterScenario:
+ @abstract called when scenarion has finished, regardless of success/failure
+ @param scenario that has been run
+ */
+- (void)cleanUpAfterScenario:(KIFTestScenario *)scenario;
 @end
