@@ -81,6 +81,12 @@ typedef struct __GSEvent * GSEventRef;
 - (UIAccessibilityElement *)accessibilityElementWithLabel:(NSString *)label accessibilityValue:(NSString *)value traits:(UIAccessibilityTraits)traits;
 {
     return [self accessibilityElementMatchingBlock:^(UIAccessibilityElement *element) {
+
+        //We never want to check against a UIButtonLabel. Only should be checking the UIButton itsef
+        //This prevents a Button returning traits as UIAccessibiltyTraitStaticText, when we really want a UIAccessibiltyTraitButton for a UIButton
+        if([element isKindOfClass:NSClassFromString(@"UIButtonLabel")])
+            return NO;
+
         BOOL labelsMatch = [element.accessibilityLabel isEqual:label];
         BOOL traitsMatch = ((element.accessibilityTraits) & traits) == traits;
         BOOL valuesMatch = !value || [value isEqual:element.accessibilityValue];
@@ -348,6 +354,32 @@ typedef struct __GSEvent * GSEventRef;
     }
     
     [touch release];
+}
+
+-(BOOL)isReachable{
+    return [self isReachableInRect:self.bounds];
+}
+
+- (BOOL)isReachableInRect:(CGRect)rect;
+{
+    BOOL wasEnabled = NO;
+    if([self isKindOfClass:[UIControl class]]){
+	    wasEnabled = [(UIControl *)self isEnabled];
+        [(UIControl *)self setEnabled:YES];
+    }
+    
+    BOOL wasUserEnabled = self.userInteractionEnabled;
+    self.userInteractionEnabled = YES;
+    
+    CGPoint tappablePoint = [self tappablePointInRect:rect];
+    
+    self.userInteractionEnabled = wasUserEnabled;
+    
+    if([self isKindOfClass:[UIControl class]]){
+	    [(UIControl *)self setEnabled:wasEnabled];
+    }
+
+    return !isnan(tappablePoint.x);
 }
 
 // Is this view currently on screen?

@@ -34,7 +34,7 @@ static NSTimeInterval KIFTestStepDefaultTimeout = 10.0;
 + (BOOL)_enterCharacter:(NSString *)characterString history:(NSMutableDictionary *)history;
 + (BOOL)_enterCustomKeyboardCharacter:(NSString *)characterString;
 
-+ (UIAccessibilityElement *)_accessibilityElementWithLabel:(NSString *)label accessibilityValue:(NSString *)value tappable:(BOOL)mustBeTappable traits:(UIAccessibilityTraits)traits error:(out NSError **)error;
++ (UIAccessibilityElement *)_accessibilityElementWithLabel:(NSString *)label accessibilityValue:(NSString *)value reachable:(KIFViewReachability)reachabilty traits:(UIAccessibilityTraits)traits error:(out NSError **)error;
 
 typedef CGPoint KIFDisplacement;
 + (KIFDisplacement)_displacementForSwipingInDirection:(KIFSwipeDirection)direction;
@@ -115,7 +115,7 @@ typedef CGPoint KIFDisplacement;
     }
     
     return [self stepWithDescription:description executionBlock:^(KIFTestStep *step, NSError **error) {
-        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:value tappable:NO traits:traits error:error];
+        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:value reachable:KIFViewReachabilityAny traits:traits error:error];
         
         NSString *waitDescription = nil;
         if (value.length) {
@@ -165,8 +165,8 @@ typedef CGPoint KIFDisplacement;
         // If we found an element, but it's not associated with a view, then something's wrong. Wait it out and try again.
         KIFTestWaitCondition(view, error, @"Cannot find view containing accessibility element with the label \"%@\"", label);
 
-        // Hidden views count as absent
-        KIFTestWaitCondition([view isHidden], error, @"Accessibility element with label \"%@\" is visible and not hidden.", label);
+        // Hidden views count as absent, and views off the screen also count as absent
+        KIFTestWaitCondition([view isHidden] || ![view isReachable], error, @"Accessibility element with label \"%@\" is visible and not hidden.", label);
 
         return KIFTestStepResultSuccess;
     }];
@@ -192,7 +192,32 @@ typedef CGPoint KIFDisplacement;
     }
     
     return [self stepWithDescription:description executionBlock:^(KIFTestStep *step, NSError **error) {
-        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:value tappable:YES traits:traits error:error];
+        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:value reachable:KIFViewReachabilityTappable traits:traits error:error];
+        return (element ? KIFTestStepResultSuccess : KIFTestStepResultWait);
+    }];
+}
+
++ (id)stepToWaitForReachableViewWithAccessibilityLabel:(NSString *)label;
+{
+    return [self stepToWaitForReachableViewWithAccessibilityLabel:label traits:UIAccessibilityTraitNone];
+}
+
++ (id)stepToWaitForReachableViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits;
+{
+    return [self stepToWaitForReachableViewWithAccessibilityLabel:label value:nil traits:traits];
+}
+
++ (id)stepToWaitForReachableViewWithAccessibilityLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits;
+{
+    NSString *description = nil;
+    if (value.length) {
+        description = [NSString stringWithFormat:@"Wait for reachable view with accessibility label \"%@\" and accessibility value \"%@\"", label, value];
+    } else {
+        description = [NSString stringWithFormat:@"Wait for reachable view with accessibility label \"%@\"", label];
+    }
+    
+    return [self stepWithDescription:description executionBlock:^(KIFTestStep *step, NSError **error) {
+        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:value reachable:KIFViewReachabilityReachable traits:traits error:error];
         return (element ? KIFTestStepResultSuccess : KIFTestStepResultWait);
     }];
 }
@@ -292,7 +317,7 @@ typedef CGPoint KIFDisplacement;
             return KIFTestStepResultSuccess;
         }
 
-        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:value tappable:YES traits:traits error:error];
+        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:value reachable:KIFViewReachabilityTappable traits:traits error:error];
         if (!element) {
             return KIFTestStepResultWait;
         }
@@ -360,7 +385,7 @@ typedef CGPoint KIFDisplacement;
     NSString *description = [NSString stringWithFormat:@"Type the text \"%@\" into the view with accessibility label \"%@\"", text, label];
     return [self stepWithDescription:description executionBlock:^(KIFTestStep *step, NSError **error) {
         
-        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:nil tappable:YES traits:traits error:error];
+        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:nil reachable:KIFViewReachabilityTappable traits:traits error:error];
         if (!element) {
             return KIFTestStepResultWait;
         }
@@ -459,7 +484,7 @@ typedef CGPoint KIFDisplacement;
     NSString *description = [NSString stringWithFormat:@"Toggle the switch with accessibility label \"%@\" to %@", label, switchIsOn ? @"ON" : @"OFF"];
     return [self stepWithDescription:description executionBlock:^(KIFTestStep *step, NSError **error) {
         
-        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:nil tappable:YES traits:UIAccessibilityTraitNone error:error];
+        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:nil reachable:KIFViewReachabilityTappable traits:UIAccessibilityTraitNone error:error];
         if (!element) {
             return KIFTestStepResultWait;
         }
@@ -563,7 +588,7 @@ typedef CGPoint KIFDisplacement;
 
     NSString *description = [NSString stringWithFormat:@"Step to swipe %@ on view with accessibility label %@", directionDescription, label];
     return [KIFTestStep stepWithDescription:description executionBlock:^(KIFTestStep *step, NSError **error) {
-        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:nil tappable:NO traits:UIAccessibilityTraitNone error:error];
+        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:nil reachable:KIFViewReachabilityAny traits:UIAccessibilityTraitNone error:error];
         if (!element) {
             return KIFTestStepResultWait;
         }
@@ -884,7 +909,7 @@ typedef CGPoint KIFDisplacement;
     return YES;
 }
 
-+ (UIAccessibilityElement *)_accessibilityElementWithLabel:(NSString *)label accessibilityValue:(NSString *)value tappable:(BOOL)mustBeTappable traits:(UIAccessibilityTraits)traits error:(out NSError **)error;
++ (UIAccessibilityElement *)_accessibilityElementWithLabel:(NSString *)label accessibilityValue:(NSString *)value reachable:(KIFViewReachability)reachabilty traits:(UIAccessibilityTraits)traits error:(out NSError **)error;
 {
     UIAccessibilityElement *element = [[UIApplication sharedApplication] accessibilityElementWithLabel:label accessibilityValue:value traits:traits];
     if (!element) {
@@ -942,16 +967,27 @@ typedef CGPoint KIFDisplacement;
         return element;
     }
 
-    if (mustBeTappable) {
+    if (reachabilty == KIFViewReachabilityTappable) {
         // Make sure the view is tappable
         if (![view isTappable]) {
+
             if (error) {
                 *error = [[[NSError alloc] initWithDomain:@"KIFTest" code:KIFTestStepResultFailure userInfo:[NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"Accessibility element with label \"%@\" is not tappable. It may be blocked by other views.", label], NSLocalizedDescriptionKey, nil]] autorelease];
             }
             return nil;
         }
+    }
+    else if (reachabilty == KIFViewReachabilityReachable){
+        // Make sure the view is reachable
+        if (![view isReachable]) {
+            
+            if (error) {
+                *error = [[[NSError alloc] initWithDomain:@"KIFTest" code:KIFTestStepResultFailure userInfo:[NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"Accessibility element with label \"%@\" is not reachable. It may be blocked by other views.", label], NSLocalizedDescriptionKey, nil]] autorelease];
+            }
+            return nil;
+        }
     } else {
-        // If we don't require tappability, at least make sure it's not hidden
+        // If we don't require tappability or reachability, at least make sure it's not hidden
         if ([view isHidden]) {
             if (error) {
                 *error = [[[NSError alloc] initWithDomain:@"KIFTest" code:KIFTestStepResultFailure userInfo:[NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"Accessibility element with label \"%@\" is hidden.", label], NSLocalizedDescriptionKey, nil]] autorelease];

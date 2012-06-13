@@ -13,7 +13,7 @@
 @interface UIView (KIFAdditions)
 
 @property (nonatomic, readonly, getter=isTappable) BOOL tappable;
-
+@property (nonatomic, readonly, getter = isReachable) BOOL reachable;
 - (BOOL)isDescendantOfFirstResponder;
 - (UIAccessibilityElement *)accessibilityElementWithLabel:(NSString *)label;
 - (UIAccessibilityElement *)accessibilityElementWithLabel:(NSString *)label traits:(UIAccessibilityTraits)traits;

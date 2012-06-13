@@ -61,6 +61,12 @@ enum {
 typedef NSInteger KIFTestStepResult;
 
 
+typedef enum {
+    KIFViewReachabilityAny = 0,
+    KIFViewReachabilityTappable,
+    KIFViewReachabilityReachable,
+} KIFViewReachability;
+
 @class KIFTestStep;
 
 /*!
@@ -253,6 +259,36 @@ typedef KIFTestStepResult (^KIFTestStepExecutionBlock)(KIFTestStep *step, NSErro
  @result A configured test step.
  */
 + (id)stepToWaitForTappableViewWithAccessibilityLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits;
+
+/*!
+ @method stepToWaitForReachableViewWithAccessibilityLabel:
+ @abstract A step that waits until a view or accessibility element is present and reachable.
+ @discussion The view or accessibility element with the given label is found in the view hierarchy. If the element isn't found or isn't currently tappable, then the step will attempt to wait until it is. Whether or not a view is tappable is based on -[UIView hitTest:] but does not require the view to be interactionEnabled.
+ @param label The accessibility label of the element to wait for.
+ @result A configured test step.
+ */
++ (id)stepToWaitForReachableViewWithAccessibilityLabel:(NSString *)label;
+
+/*!
+ @method stepToWaitForReachableViewWithAccessibilityLabel:traits:
+ @abstract A step that waits until a view or accessibility element is present and reachable.
+ @discussion The view or accessibility element with the given label is searched for in the view hierarchy. If the element isn't found or isn't currently tappable, then the step will attempt to wait until it is. Whether or not a view is tappable is based on -[UIView hitTest:] but does not require the view to be interactionEnabled.
+ @param label The accessibility label of the element to wait for.
+ @param traits The accessibility traits of the element to wait for. Elements that do not include at least these traits are ignored.
+ @result A configured test step.
+ */
++ (id)stepToWaitForReachableViewWithAccessibilityLabel:(NSString *)label traits:(UIAccessibilityTraits)traits;
+
+/*!
+ @method stepToWaitForReachableViewWithAccessibilityLabel:value:traits:
+ @abstract A step that waits until a view or accessibility element is present and reachable.
+ @discussion The view or accessibility element with the given label is searched for in the view hierarchy. If the element isn't found or isn't currently reachable, then the step will attempt to wait until it is. Whether or not a view is reachable is based on -[UIView hitTest:] but does not require the view to be interactionEnabled.
+ @param label The accessibility label of the element to wait for.
+ @param value The accessibility value of the element to reach.
+ @param traits The accessibility traits of the element to wait for. Elements that do not include at least these traits are ignored.
+ @result A configured test step.
+ */
++ (id)stepToWaitForReachableViewWithAccessibilityLabel:(NSString *)label value:(NSString *)value traits:(UIAccessibilityTraits)traits;
 
 /*!
  @method stepToWaitForTimeInterval:description:
