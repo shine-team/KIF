@@ -20,6 +20,10 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
 {
     while (element && ![element isKindOfClass:[UIView class]]) {
         element = [element accessibilityContainer];
+        
+        if([element isKindOfClass:NSClassFromString(@"UITableViewCellAccessibilityElement")]){
+            element = [element performSelector:@selector(tableViewCell)];
+        }
     }
     
     return (UIView *)element;
