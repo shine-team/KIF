@@ -86,10 +86,10 @@ typedef struct __GSEvent * GSEventRef;
         //This prevents a Button returning traits as UIAccessibiltyTraitStaticText, when we really want a UIAccessibiltyTraitButton for a UIButton
         if([element isKindOfClass:NSClassFromString(@"UIButtonLabel")])
             return NO;
-
-        BOOL labelsMatch = [element.accessibilityLabel isEqual:label];
+        
+        BOOL labelsMatch = [element.accessibilityLabel isEqualToString:label];
         BOOL traitsMatch = ((element.accessibilityTraits) & traits) == traits;
-        BOOL valuesMatch = !value || [value isEqual:element.accessibilityValue];
+        BOOL valuesMatch = !value || [value isEqualToString:element.accessibilityValue];
 
         return (BOOL)(labelsMatch && traitsMatch && valuesMatch);
     }];
