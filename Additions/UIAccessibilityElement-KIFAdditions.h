@@ -14,5 +14,5 @@
 
 // Finds the view that this element is a part of
 + (UIView *)viewContainingAccessibilityElement:(UIAccessibilityElement *)element;
-
++ (UIView *)tableViewContainingAccessibilityElement:(UIAccessibilityElement *)element;
 @end

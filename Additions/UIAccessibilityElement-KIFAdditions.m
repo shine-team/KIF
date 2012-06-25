@@ -29,4 +29,13 @@ MAKE_CATEGORIES_LOADABLE(UIAccessibilityElement_KIFAdditions)
     return (UIView *)element;
 }
 
++ (UIView *)tableViewContainingAccessibilityElement:(UIAccessibilityElement *)element;
+{
+    while (element && ![element isKindOfClass:[UITableView class]]) {
+        element = [element accessibilityContainer];
+    }
+    
+    return (UIView *)element;
+}
+
 @end

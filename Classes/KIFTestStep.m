@@ -549,13 +549,16 @@ typedef CGPoint KIFDisplacement;
     return [KIFTestStep stepWithDescription:description executionBlock:^(KIFTestStep *step, NSError **error) {
         UIAccessibilityElement *element = [[UIApplication sharedApplication] accessibilityElementWithLabel:tableViewLabel];
         KIFTestCondition(element, error, @"View with label %@ not found", tableViewLabel);
-        UITableView *tableView = (UITableView*)[UIAccessibilityElement viewContainingAccessibilityElement:element];
+        UITableView *tableView = (UITableView*)[UIAccessibilityElement tableViewContainingAccessibilityElement:element];
+        UITableViewCell *tableViewCell = (UITableViewCell*)[UIAccessibilityElement viewContainingAccessibilityElement:element];
         
-        KIFTestCondition([tableView isKindOfClass:[UITableView class]], error, @"Specified view is not a UITableView");
-        
-        KIFTestCondition(tableView, error, @"Table view with label %@ not found", tableViewLabel);
-        
+        KIFTestCondition([tableView isKindOfClass:[UITableView class]], error, @"Specified view is inside a UITableView");
+        KIFTestCondition([tableViewCell isKindOfClass:[UITableViewCell class]], error, @"Specified view is not a UITableViewCell");
+
         UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+        KIFTestCondition(cell == tableViewCell, error, @"Cell: %@, at Specified Index Path (Section: %d, Row: %d) is not the cell with label %@",
+                         cell, indexPath.section, indexPath.row, tableViewLabel);
+
         CGRect cellFrame = [cell.contentView convertRect:[cell.contentView frame] toView:tableView];
         [tableView tapAtPoint:CGPointCenteredInRect(cellFrame)];
         
