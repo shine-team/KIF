@@ -467,4 +467,12 @@ typedef enum {
  */
 + (id)stepToSwipeViewWithAccessibilityLabel:(NSString *)label inDirection:(KIFSwipeDirection)direction;
 
+/*!
+ @method stepToSwipeScreenInDirection:inDirection:
+ @abstract A step that swipes from the center of the screen in the given direction.
+ @param direction The direction in which to swipe.
+ @result A configured test step.
+ */
++ (id)stepToSwipeScreenInDirection:(KIFSwipeDirection)direction;
+
 @end

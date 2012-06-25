@@ -588,18 +588,26 @@ typedef CGPoint KIFDisplacement;
 
     NSString *description = [NSString stringWithFormat:@"Step to swipe %@ on view with accessibility label %@", directionDescription, label];
     return [KIFTestStep stepWithDescription:description executionBlock:^(KIFTestStep *step, NSError **error) {
-        UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:nil reachable:KIFViewReachabilityAny traits:UIAccessibilityTraitNone error:error];
-        if (!element) {
-            return KIFTestStepResultWait;
+        UIView *viewToSwipe;
+        CGRect elementFrame;
+        if(label){
+            UIAccessibilityElement *element = [self _accessibilityElementWithLabel:label accessibilityValue:nil reachable:KIFViewReachabilityAny traits:UIAccessibilityTraitNone error:error];
+            if (!element) {
+                return KIFTestStepResultWait;
+            }
+            viewToSwipe = [UIAccessibilityElement viewContainingAccessibilityElement:element];
+            KIFTestWaitCondition(viewToSwipe, error, @"Cannot find view with accessibility label \"%@\"", label);
+            
+            elementFrame = [viewToSwipe.window convertRect:element.accessibilityFrame toView:viewToSwipe];
         }
-
-        UIView *viewToSwipe = [UIAccessibilityElement viewContainingAccessibilityElement:element];
-        KIFTestWaitCondition(viewToSwipe, error, @"Cannot find view with accessibility label \"%@\"", label);
+		else {
+            viewToSwipe = [[UIApplication sharedApplication].keyWindow.subviews lastObject];
+            elementFrame = [viewToSwipe.window convertRect:viewToSwipe.accessibilityFrame toView:viewToSwipe];
+        }
 
         // Within this method, all geometry is done in the coordinate system of
         // the view to swipe.
 
-        CGRect elementFrame = [viewToSwipe.window convertRect:element.accessibilityFrame toView:viewToSwipe];
         CGPoint swipeStart = CGPointCenteredInRect(elementFrame);
 
         KIFDisplacement swipeDisplacement = [self _displacementForSwipingInDirection:direction];
@@ -617,6 +625,11 @@ typedef CGPoint KIFDisplacement;
 
         return KIFTestStepResultSuccess;
     }];
+}
+
++ (id)stepToSwipeScreenInDirection:(KIFSwipeDirection)direction{
+    return [self stepToSwipeViewWithAccessibilityLabel:nil
+                                           inDirection:direction];
 }
 
 #pragma mark Step Collections
